@@ -15,7 +15,8 @@ if not chamfer_found:
               "/".join(os.path.abspath(__file__).split('/')[:-1] + ["chamfer3D.cu"]),
               ],
 
-                      extra_cuda_cflags=['--compiler-bindir=/usr/bin/gcc-8'],)
+          extra_cuda_cflags=[],)
+                      # extra_cuda_cflags=['--compiler-bindir=/usr/bin/gcc-8'],)
     print("Loaded JIT 3D CUDA chamfer distance")
 
 else:
