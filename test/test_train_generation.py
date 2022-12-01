@@ -1,5 +1,5 @@
 from utils.file_utils import *
-from train_generation import get_dataset
+from train_generation import parse_args, get_dataset, get_dataloader
 
 
 def test_dir_preparation():
@@ -17,7 +17,11 @@ def test_dataset_preparation():
     dataroot = "../data/ShapeNetCore.v2.PC15k/"
     npoints = 2048
     category = "airplane"
+    # dataset
     train_dataset, test_dataset = get_dataset(dataroot, npoints, category)
+    # dataset loader
+    opt = parse_args()
+    dataloader, _, train_sampler, _ = get_dataloader(opt, train_dataset, None)
 
 
 if __name__ == "__main__":
