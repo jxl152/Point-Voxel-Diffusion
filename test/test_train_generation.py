@@ -14,7 +14,7 @@ def test_dir_preparation():
     print(f"output_dir = {output_dir}")
 
 def test_dataset_preparation():
-    dataroot = "data/ShapeNetCore.v2.PC15k/"
+    dataroot = "../data/ShapeNetCore.v2.PC15k/"
     npoints = 2048
     category = "airplane"
     train_dataset, test_dataset = get_dataset(dataroot, npoints, category)
