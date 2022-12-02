@@ -1,6 +1,11 @@
 from utils.file_utils import *
-from train_generation import parse_args, get_dataset, get_dataloader
-
+from train_generation import (
+    parse_args,
+    get_dataset,
+    get_dataloader,
+    get_betas,
+    GaussianDiffusion
+)
 
 def test_dir_preparation():
     print(f"__file__ = {__file__}")
@@ -23,7 +28,13 @@ def test_dataset_preparation():
     opt = parse_args()
     dataloader, _, train_sampler, _ = get_dataloader(opt, train_dataset, None)
 
+def test_gaussian_diffusion():
+    opt = parse_args()
+    betas = get_betas(opt.schedule_type, opt.beta_start, opt.beta_end, opt.time_num)
+    diffusion = GaussianDiffusion(betas, opt.loss_type, opt.model_mean_type, opt.model_var_type)
+
 
 if __name__ == "__main__":
     # test_dir_preparation()
-    test_dataset_preparation()
+    # test_dataset_preparation()
+    test_gaussian_diffusion()

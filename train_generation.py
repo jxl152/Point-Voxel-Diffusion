@@ -115,7 +115,7 @@ class GaussianDiffusion:
 
         self.betas = torch.from_numpy(betas).float()
         self.alphas_cumprod = alphas_cumprod.float()
-        self.alphas_cumprod_prev = alphas_cumprod_prev.float()
+        self.alphas_cumprod_prev = alphas_cumprod_prev.float()  # equivalent to self.to(torch.float32)
 
         # calculations for diffusion q(x_t | x_{t-1}) and others
         self.sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod).float()
