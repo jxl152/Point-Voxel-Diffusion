@@ -4,7 +4,8 @@ from train_generation import (
     get_dataset,
     get_dataloader,
     get_betas,
-    GaussianDiffusion
+    GaussianDiffusion,
+    PVCNN2
 )
 
 def test_dir_preparation():
@@ -33,8 +34,14 @@ def test_gaussian_diffusion():
     betas = get_betas(opt.schedule_type, opt.beta_start, opt.beta_end, opt.time_num)
     diffusion = GaussianDiffusion(betas, opt.loss_type, opt.model_mean_type, opt.model_var_type)
 
+def test_pvcnn():
+    opt = parse_args()
+    model = PVCNN2(num_classes=opt.nc, embed_dim=opt.embed_dim, use_att=opt.attention,
+                        dropout=opt.dropout, extra_feature_channels=0)
+
 
 if __name__ == "__main__":
     # test_dir_preparation()
     # test_dataset_preparation()
-    test_gaussian_diffusion()
+    # test_gaussian_diffusion()
+    test_pvcnn()

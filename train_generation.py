@@ -375,14 +375,21 @@ class GaussianDiffusion:
 
 
 class PVCNN2(PVCNN2Base):
+    # to create 4 Set Abstraction blocks
+    # Note: the method (create_pointnet2_sa_components) to construct SA blocks controls the number of PVConv modules
+    # , irrespective of the parameter of num_blocks defined here
     sa_blocks = [
+        # (conv_configs, sa_configs)
         ((32, 2, 32), (1024, 0.1, 32, (32, 64))),
         ((64, 3, 16), (256, 0.2, 32, (64, 128))),
         ((128, 3, 8), (64, 0.4, 32, (128, 256))),
         (None, (16, 0.8, 32, (256, 256, 512))),
     ]
+    # to create 4 Feature Propagation blocks
+    # , each of which consists of 1 PointNetFPModule and several (3 or 2 in this case) PVConv modules
     fp_blocks = [
-        ((256, 256), (256, 3, 8)),
+        # (fp_configs, conv_configs)
+        ((256, 256), (256, 3, 8)),  # conv_configs: (out_channels, num_blocks, voxel_resolution)
         ((256, 256), (256, 3, 8)),
         ((256, 128), (128, 2, 16)),
         ((128, 128, 64), (64, 2, 32)),

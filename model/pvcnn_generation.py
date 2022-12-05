@@ -78,7 +78,7 @@ def create_pointnet2_sa_components(sa_blocks, extra_feature_channels, embed_dim=
     sa_layers, sa_in_channels = [], []
     c = 0
     for conv_configs, sa_configs in sa_blocks:
-        k = 0
+        k = 0   # use k to control the number of PVConv modules in each SA block
         sa_in_channels.append(in_channels)
         sa_blocks = []
 
@@ -102,6 +102,7 @@ def create_pointnet2_sa_components(sa_blocks, extra_feature_channels, embed_dim=
                 in_channels = out_channels
                 k += 1
             extra_feature_channels = in_channels
+
         num_centers, radius, num_neighbors, out_channels = sa_configs
         _out_channels = []
         for oc in out_channels:
@@ -134,7 +135,7 @@ def create_pointnet2_fp_modules(fp_blocks, in_channels, sa_in_channels, embed_di
     r, vr = width_multiplier, voxel_resolution_multiplier
 
     fp_layers = []
-    c = 0
+    c = 0   # use c to control attention mechanism
     for fp_idx, (fp_configs, conv_configs) in enumerate(fp_blocks):
         fp_blocks = []
         out_channels = tuple(int(r * oc) for oc in fp_configs)
