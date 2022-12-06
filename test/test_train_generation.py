@@ -1,3 +1,5 @@
+import numpy as np
+
 from utils.file_utils import *
 from train_generation import (
     parse_args,
@@ -7,6 +9,8 @@ from train_generation import (
     GaussianDiffusion,
     PVCNN2
 )
+from torch.utils.data import Dataset
+from torch.utils.data import DataLoader
 
 def test_dir_preparation():
     print(f"__file__ = {__file__}")
@@ -39,9 +43,34 @@ def test_pvcnn():
     model = PVCNN2(num_classes=opt.nc, embed_dim=opt.embed_dim, use_att=opt.attention,
                         dropout=opt.dropout, extra_feature_channels=0)
 
+def test_train_generation_process():
+
+    class TestDataset(Dataset):     # to build a small dataset for practicable debug
+        def __init__(self, data):
+            self.train_points = data
+
+        def __len__(self):
+            return len(self.train_points)
+
+        def __getitem__(self, idx):
+            out = {
+                "idx": idx,
+                "train_points": self.train_points[idx]
+            }
+            return out
+
+    train_dataset = TestDataset(np.random.randn(32, 8, 3).astype(np.float32))
+    dataloader = DataLoader(train_dataset, batch_size=16)
+    noises_init = torch.randn(len(train_dataset), 8, 3)
+
+    for i, data in enumerate(dataloader):
+        x = data['train_points'].transpose(1, 2)    # x = {Tensor:(16,3,8)}
+        noises_batch = noises_init[data['idx']].transpose(1, 2) # noises_batch = {Tensor:(16,3,8)}
+
 
 if __name__ == "__main__":
     # test_dir_preparation()
     # test_dataset_preparation()
     # test_gaussian_diffusion()
-    test_pvcnn()
+    # test_pvcnn()
+    test_train_generation_process()

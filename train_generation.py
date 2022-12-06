@@ -598,7 +598,7 @@ def train(gpu, opt, output_dir, noises_init):
         model.multi_gpu_wrapper(_transform_)
 
 
-    elif opt.distribution_type == 'single':
+    elif opt.distribution_type == 'single':     # default
         def _transform_(m):
             return nn.parallel.DataParallel(m)
         model = model.cuda()
@@ -625,7 +625,7 @@ def train(gpu, opt, output_dir, noises_init):
     if opt.model != '':
         start_epoch = torch.load(opt.model)['epoch'] + 1
     else:
-        start_epoch = 0
+        start_epoch = 0     # default: train from beginning
 
     def new_x_chain(x, num_chain):
         return torch.randn(num_chain, *x.shape[1:], device=x.device)
@@ -640,8 +640,9 @@ def train(gpu, opt, output_dir, noises_init):
         lr_scheduler.step(epoch)
 
         for i, data in enumerate(dataloader):
-            x = data['train_points'].transpose(1,2)
-            noises_batch = noises_init[data['idx']].transpose(1,2)
+            # data is a dict containing 8 key-value pairs
+            x = data['train_points'].transpose(1,2) # x={Tensor:{batch_size, channels, num_points}}, e.g. (16, 3, 2048)
+            noises_batch = noises_init[data['idx']].transpose(1,2)  # noises_batch = {Tensor:{bs, channels, num_points}}
 
             '''
             train diffusion
@@ -793,7 +794,7 @@ def main():
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot', default='ShapeNetCore.v2.PC15k/')
+    parser.add_argument('--dataroot', default='data/ShapeNetCore.v2.PC15k/')
     parser.add_argument('--category', default='chair')
 
     parser.add_argument('--bs', type=int, default=16, help='input batch size')

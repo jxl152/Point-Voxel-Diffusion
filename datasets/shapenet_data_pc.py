@@ -130,7 +130,7 @@ class Uniform15KPC(Dataset):
         self.train_points = self.all_points[:, :10000]
         self.test_points = self.all_points[:, 10000:]
 
-        self.tr_sample_size = min(10000, tr_sample_size)
+        self.tr_sample_size = min(10000, tr_sample_size)    # self.tr_sample_size=2048 if opt.npoints=2048
         self.te_sample_size = min(5000, te_sample_size)
         print("Total number of data:%d" % len(self.train_points))
         print("Min number of points: (train)%d (test)%d"
@@ -159,6 +159,7 @@ class Uniform15KPC(Dataset):
 
     def __getitem__(self, idx):
         tr_out = self.train_points[idx]
+        # As opt.npoints=2048, we sample 2048 points for training and testing, respectively.
         if self.random_subsample:
             tr_idxs = np.random.choice(tr_out.shape[0], self.tr_sample_size)
         else:
@@ -176,6 +177,7 @@ class Uniform15KPC(Dataset):
         cate_idx = self.cate_idx_lst[idx]
         sid, mid = self.all_cate_mids[idx]
 
+        # the output contains 8 key-value pairs
         out = {
             'idx': idx,
             'train_points': tr_out,
