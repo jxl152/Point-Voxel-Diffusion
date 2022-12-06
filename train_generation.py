@@ -312,6 +312,7 @@ class GaussianDiffusion:
             noise = torch.randn(data_start.shape, dtype=data_start.dtype, device=data_start.device)
         assert noise.shape == data_start.shape and noise.dtype == data_start.dtype
 
+        # diffuse the data
         data_t = self.q_sample(x_start=data_start, t=t, noise=noise)
 
         if self.loss_type == 'mse':
@@ -431,13 +432,13 @@ class Model(nn.Module):
         assert data.dtype == torch.float
         assert t.shape == torch.Size([B]) and t.dtype == torch.int64
 
-        out = self.model(data, t)
+        out = self.model(data, t)   # PVCNN2Base.forward(inputs, t)
 
         assert out.shape == torch.Size([B, D, N])
         return out
 
     def get_loss_iter(self, data, noises=None):
-        B, D, N = data.shape
+        B, D, N = data.shape    # batch_size, channels, num_points
         t = torch.randint(0, self.diffusion.num_timesteps, size=(B,), device=data.device)
 
         if noises is not None:
