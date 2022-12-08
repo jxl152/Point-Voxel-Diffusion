@@ -203,6 +203,7 @@ class GaussianDiffusion:
             raise NotImplementedError(self.model_var_type)
 
         if self.model_mean_type == 'eps':
+            # x_recon is x_0
             x_recon = self._predict_xstart_from_eps(data, t=t, eps=model_output)
 
             if clip_denoised:
@@ -220,6 +221,7 @@ class GaussianDiffusion:
         else:
             return model_mean, model_variance, model_log_variance
 
+    # This method is to predict x_0 directly from x_t and the predicted noise
     def _predict_xstart_from_eps(self, x_t, t, eps):
         assert x_t.shape == eps.shape
         return (
@@ -240,6 +242,7 @@ class GaussianDiffusion:
         # no noise when t == 0
         nonzero_mask = torch.reshape(1 - (t == 0).float(), [data.shape[0]] + [1] * (len(data.shape) - 1))
 
+        # sample is x_{t-1}. The sampling code corresponds to the sampling algorithm described in the paper DDPM
         sample = model_mean + nonzero_mask * torch.exp(0.5 * model_log_variance) * noise
         assert sample.shape == pred_xstart.shape
         return (sample, pred_xstart) if return_pred_xstart else sample
@@ -668,7 +671,9 @@ def train(gpu, opt, output_dir, noises_init):
 
 
             if i % opt.print_freq == 0 and should_diag:
-
+                # :> right aligns the result (within the available space)
+                # 3d format an interger reserving 3 spaces, right justified by default
+                # 10.4f format a float, reserving 10 spaces, 4 after the decimal point, right justified by default
                 logger.info('[{:>3d}/{:>3d}][{:>3d}/{:>3d}]    loss: {:>10.4f},    '
                              'netpNorm: {:>10.2f},   netgradNorm: {:>10.2f}     '
                              .format(
@@ -692,8 +697,10 @@ def train(gpu, opt, output_dir, noises_init):
                 .format(
                 epoch, opt.niter,
                 *x_range,
-                kl_stats['total_bpd_b'].item(),
-                kl_stats['terms_bpd'].item(), kl_stats['prior_bpd_b'].item(), kl_stats['mse_bt'].item()
+                kl_stats['total_bpd_b'].item(),     # L_vlb
+                kl_stats['terms_bpd'].item(),       # L_0 + L_1 + ... + L_(T-1)
+                kl_stats['prior_bpd_b'].item(),     # L_T
+                kl_stats['mse_bt'].item()
             ))
 
 
@@ -719,15 +726,18 @@ def train(gpu, opt, output_dir, noises_init):
                     *gen_eval_range, *gen_stats,
                 ))
 
+            # visualize the final results of 25 generations
             visualize_pointcloud_batch('%s/epoch_%03d_samples_eval.png' % (outf_syn, epoch),
                                        x_gen_eval.transpose(1, 2), None, None,
                                        None)
 
+            # visualize the generation process including the start, intermediate, and final results
             visualize_pointcloud_batch('%s/epoch_%03d_samples_eval_all.png' % (outf_syn, epoch),
                                        x_gen_all.transpose(1, 2), None,
                                        None,
                                        None)
 
+            # visualize the training data
             visualize_pointcloud_batch('%s/epoch_%03d_x.png' % (outf_syn, epoch), x.transpose(1, 2), None,
                                        None,
                                        None)
