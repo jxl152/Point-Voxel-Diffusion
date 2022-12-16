@@ -533,7 +533,7 @@ def main(opt):
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot', default='ShapeNetCore.v2.PC15k/')
+    parser.add_argument('--dataroot', default='data/ShapeNetCore.v2.PC15k/')
     parser.add_argument('--category', default='chair')
 
     parser.add_argument('--batch_size', type=int, default=50, help='input batch size')
