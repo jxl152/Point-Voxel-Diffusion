@@ -7,7 +7,8 @@ from train_generation import (
     get_dataloader,
     get_betas,
     GaussianDiffusion,
-    PVCNN2
+    PVCNN2,
+    Model
 )
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
@@ -67,10 +68,54 @@ def test_train_generation_process():
         x = data['train_points'].transpose(1, 2)    # x = {Tensor:(16,3,8)}
         noises_batch = noises_init[data['idx']].transpose(1, 2) # noises_batch = {Tensor:(16,3,8)}
 
+def test_pvcnn():
+    args = parse_args()
+    model = PVCNN2(num_classes=args.nc, embed_dim=args.embed_dim, use_att=args.attention,
+                   dropout=args.dropout, extra_feature_channels=0).cuda()
+    device = torch.device("cuda")
+    B, D, N = 16, 3, 2048
+    data = torch.randn([B, D, N], device=device)
+    t = torch.randint(0, 1000, size=(B,), device=data.device)
+    out = model(data, t)
+
+
+def test_pvcnn_2():
+    device = torch.device("cuda")
+
+    args = parse_args()
+    betas = get_betas(args.schedule_type, args.beta_start, args.beta_end, args.time_num)
+    model = Model(args, betas, args.loss_type, args.model_mean_type, args.model_var_type)
+    model = model.cuda()
+
+    dataroot = "../data/ShapeNetCore.v2.PC15k/"
+    category = "chair"
+    train_dataset, _ = get_dataset(dataroot, args.npoints, category)
+
+    noises_init = torch.randn(len(train_dataset), args.npoints, args.nc, device=device)
+
+    # one point cloud each iteration
+    # for i in range(len(train_dataset)):
+    #     point_idx = np.random.randint(0, 9999, size=2048)
+    #     data = np.expand_dims(train_dataset.train_points[i, point_idx, :], axis=0)
+    #     data = torch.tensor(data, device=device).transpose(1, 2)
+    #     noises_batch = noises_init[i, :, :].unsqueeze(dim=0).transpose(1, 2)
+    #     loss = model.get_loss_iter(data, noises_batch).mean()
+
+    for i in range(len(train_dataset) // 16):
+        point_idx = np.random.randint(0, 9999, size=2048)
+        start_idx = i*16
+        end_idx = min((i+1)*16, len(train_dataset))
+        data = train_dataset.train_points[start_idx:end_idx, point_idx, :]
+        data = torch.tensor(data, device=device).transpose(1, 2)
+        noises_batch = noises_init[start_idx:end_idx, :, :].transpose(1, 2)
+        loss = model.get_loss_iter(data, noises_batch).mean()
+
 
 if __name__ == "__main__":
     # test_dir_preparation()
     # test_dataset_preparation()
     # test_gaussian_diffusion()
     # test_pvcnn()
-    test_train_generation_process()
+    # test_train_generation_process()
+    # test_pvcnn()
+    test_pvcnn_2()
