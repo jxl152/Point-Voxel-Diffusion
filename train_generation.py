@@ -694,7 +694,7 @@ def train(gpu, opt, output_dir, noises_init):
                     netpNorm, netgradNorm,
                         ))
 
-                if opt.log_to_wandb:
+                if opt.logs_to_wandb:
                     wandb.log({
                         'epoch': epoch,
                         'lr': lr_scheduler.optimizer.param_groups[-1]['lr'],
@@ -794,7 +794,7 @@ def train(gpu, opt, output_dir, noises_init):
                 model.load_state_dict(
                     torch.load('%s/epoch_%d.pth' % (output_dir, epoch), map_location=map_location)['model_state'])
 
-    if opt.log_to_wandb:
+    if opt.logs_to_wandb:
         run.finish()
 
     dist.destroy_process_group()
