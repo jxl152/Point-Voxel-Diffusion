@@ -4,6 +4,7 @@ import torch.optim as optim
 import torch.utils.data
 
 import argparse
+import wandb
 from torch.distributions import Normal
 
 from utils.file_utils import *
@@ -635,6 +636,18 @@ def train(gpu, opt, output_dir, noises_init):
         return torch.randn(num_chain, *x.shape[1:], device=x.device)
 
 
+    if opt.logs_to_wandb:
+        if opt.project_name is None:
+            raise ValueError("args.logs_to_wandb set to True but args.project_name is None")
+
+        # use WandB to monitor the training in real-time
+        run = wandb.init(
+            project=opt.project_name,
+            entity=opt.project_owner,
+            config=vars(opt),
+            name=opt.run_name
+        )
+        wandb.watch(model.model)
 
     for epoch in range(start_epoch, opt.niter):
 
@@ -680,6 +693,15 @@ def train(gpu, opt, output_dir, noises_init):
                         epoch, opt.niter, i, len(dataloader),loss.item(),
                     netpNorm, netgradNorm,
                         ))
+
+                if opt.log_to_wandb:
+                    wandb.log({
+                        'epoch': epoch,
+                        'lr': lr_scheduler.optimizer.param_groups[-1]['lr'],
+                        'loss': loss.item(),
+                        'netpNorm': netpNorm,
+                        'netgradNorm': netgradNorm
+                    })
 
 
         if (epoch + 1) % opt.diagIter == 0 and should_diag:
@@ -772,6 +794,9 @@ def train(gpu, opt, output_dir, noises_init):
                 model.load_state_dict(
                     torch.load('%s/epoch_%d.pth' % (output_dir, epoch), map_location=map_location)['model_state'])
 
+    if opt.log_to_wandb:
+        run.finish()
+
     dist.destroy_process_group()
 
 def main():
@@ -836,6 +861,12 @@ def parse_args():
 
     parser.add_argument('--model', default='', help="path to model (to continue training)")
 
+    '''debug'''
+    parser.add_argument('--logs_to_wandb', type=bool, default=True)
+    parser.add_argument('--project_name', type=str, default='Point-Voxel-Diffusion')
+    parser.add_argument('--project_owner', type=str, default='lanji')
+    run_name = datetime.datetime.now().strftime("pvd-%Y-%m-%d-%H-%M")
+    parser.add_argument('--run_name', type=str, default=run_name)
 
     '''distributed'''
     parser.add_argument('--world_size', default=1, type=int,

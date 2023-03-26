@@ -9,3 +9,4 @@ __pycache__
 eval_model
 eval_data
 pretrained
+wandb
