@@ -5,6 +5,7 @@ import torch.utils.data
 
 import argparse
 import wandb
+import distutils.util
 from torch.distributions import Normal
 
 from utils.file_utils import *
@@ -733,7 +734,9 @@ def train(gpu, opt, output_dir, noises_init):
             model.eval()
             with torch.no_grad():
 
-                x_gen_eval = model.gen_samples(new_x_chain(x, 25).shape, x.device, clip_denoised=False)
+                # x_gen_eval = model.gen_samples(new_x_chain(x, 25).shape, x.device, clip_denoised=False)
+                # TODO: fix gaussian noises to be denoised
+                x_gen_eval = model.gen_samples(new_x_chain(x, 4).shape, x.device, clip_denoised=False)
                 x_gen_list = model.gen_sample_traj(new_x_chain(x, 1).shape, x.device, freq=40, clip_denoised=False)
                 x_gen_all = torch.cat(x_gen_list, dim=0)
 
@@ -862,7 +865,7 @@ def parse_args():
     parser.add_argument('--model', default='', help="path to model (to continue training)")
 
     '''debug'''
-    parser.add_argument('--logs_to_wandb', type=bool, default=True)
+    parser.add_argument('--logs_to_wandb', type=distutils.util.strtobool, default='True')
     parser.add_argument('--project_name', type=str, default='Point-Voxel-Diffusion')
     parser.add_argument('--project_owner', type=str, default='lanji')
     run_name = datetime.datetime.now().strftime("pvd-%Y-%m-%d-%H-%M")
