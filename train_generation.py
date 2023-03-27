@@ -710,21 +710,21 @@ def train(gpu, opt, output_dir, noises_init):
             logger.info('Diagnosis:')
 
             x_range = [x.min().item(), x.max().item()]
-            kl_stats = model.all_kl(x)
+            # kl_stats = model.all_kl(x)
             logger.info('      [{:>3d}/{:>3d}]    '
                          'x_range: [{:>10.4f}, {:>10.4f}],   '
-                         'total_bpd_b: {:>10.4f},    '
-                         'terms_bpd: {:>10.4f},  '
-                         'prior_bpd_b: {:>10.4f}    '
-                         'mse_bt: {:>10.4f}  '
+                         # 'total_bpd_b: {:>10.4f},    '
+                         # 'terms_bpd: {:>10.4f},  '
+                         # 'prior_bpd_b: {:>10.4f}    '
+                         # 'mse_bt: {:>10.4f}  '
                 .format(
                 epoch, opt.niter,
-                *x_range,
-                kl_stats['total_bpd_b'].item(),     # L_vlb
-                kl_stats['terms_bpd'].item(),       # L_0 + L_1 + ... + L_(T-1)
-                kl_stats['prior_bpd_b'].item(),     # L_T
-                kl_stats['mse_bt'].item()
-            ))
+                *x_range))
+                # kl_stats['total_bpd_b'].item(),     # L_vlb
+                # kl_stats['terms_bpd'].item(),       # L_0 + L_1 + ... + L_(T-1)
+                # kl_stats['prior_bpd_b'].item(),     # L_T
+                # kl_stats['mse_bt'].item()
+            # ))
 
 
 
@@ -735,7 +735,6 @@ def train(gpu, opt, output_dir, noises_init):
             with torch.no_grad():
 
                 # x_gen_eval = model.gen_samples(new_x_chain(x, 25).shape, x.device, clip_denoised=False)
-                # TODO: fix gaussian noises to be denoised
                 x_gen_eval = model.gen_samples(new_x_chain(x, 4).shape, x.device, clip_denoised=False)
                 x_gen_list = model.gen_sample_traj(new_x_chain(x, 1).shape, x.device, freq=40, clip_denoised=False)
                 x_gen_all = torch.cat(x_gen_list, dim=0)
@@ -817,6 +816,7 @@ def main():
     ''' workaround '''
     train_dataset, _ = get_dataset(opt.dataroot, opt.npoints, opt.category)
     noises_init = torch.randn(len(train_dataset), opt.npoints, opt.nc)
+    # noises_init = torch.randn(1, opt.npoints, opt.nc).repeat(len(train_dataset), 1, 1)
 
     if opt.dist_url == "env://" and opt.world_size == -1:
         opt.world_size = int(os.environ["WORLD_SIZE"])

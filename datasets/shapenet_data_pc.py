@@ -67,10 +67,11 @@ class Uniform15KPC(Dataset):
                 continue
 
             all_mids = []
-            for x in os.listdir(sub_path):
+            for x in os.listdir(sub_path)[1:2]:
                 if not x.endswith('.npy'):
                     continue
-                all_mids.append(os.path.join(self.split, x[:-len('.npy')]))
+                for i in range(1600):
+                    all_mids.append(os.path.join(self.split, x[:-len('.npy')]))
 
             # NOTE: [mid] contains the split: i.e. "train/<mid>" or "val/<mid>" or "test/<mid>"
             for mid in all_mids:
