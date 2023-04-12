@@ -10,3 +10,4 @@ eval_model
 eval_data
 pretrained
 wandb
+*.sif

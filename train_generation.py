@@ -5,6 +5,7 @@ import torch.utils.data
 
 import argparse
 import wandb
+import distutils.util
 from torch.distributions import Normal
 
 from utils.file_utils import *
@@ -862,7 +863,7 @@ def parse_args():
     parser.add_argument('--model', default='', help="path to model (to continue training)")
 
     '''debug'''
-    parser.add_argument('--logs_to_wandb', type=bool, default=True)
+    parser.add_argument('--logs_to_wandb', type=distutils.util.strtobool, default='True')
     parser.add_argument('--project_name', type=str, default='Point-Voxel-Diffusion')
     parser.add_argument('--project_owner', type=str, default='lanji')
     run_name = datetime.datetime.now().strftime("pvd-%Y-%m-%d-%H-%M")
