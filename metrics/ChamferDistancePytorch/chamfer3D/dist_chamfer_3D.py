@@ -16,7 +16,8 @@ if not chamfer_found:
               ],
 
           extra_cuda_cflags=[],)
-                      # extra_cuda_cflags=['--compiler-bindir=/usr/bin/gcc-8'],)
+          # extra_cuda_cflags=['--compiler-bindir=/usr/bin/gcc'],)
+          # extra_cuda_cflags=['--compiler-bindir=/usr/bin/gcc-8'],)
     print("Loaded JIT 3D CUDA chamfer distance")
 
 else:

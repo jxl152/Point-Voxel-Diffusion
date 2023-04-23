@@ -11,6 +11,7 @@ setup(
     ],
 
     extra_cuda_cflags=[],
+    # extra_cuda_cflags=['--compiler-bindir=/usr/bin/gcc'],
     # extra_cuda_cflags=['--compiler-bindir=/usr/bin/gcc-8'],
     cmdclass={
         'build_ext': BuildExtension
