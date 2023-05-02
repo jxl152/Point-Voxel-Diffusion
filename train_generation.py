@@ -760,6 +760,12 @@ def train(gpu, opt, output_dir, noises_init):
                                        None,
                                        None)
 
+            if opt.logs_to_wandb:
+                wandb.log({
+                    'generation results': [wandb.Image('%s/epoch_%03d_samples_eval.png' % (outf_syn, epoch)),
+                                           wandb.Image('%s/epoch_%03d_samples_eval_all.png' % (outf_syn, epoch))]
+                })
+
             # visualize the training data
             visualize_pointcloud_batch('%s/epoch_%03d_x.png' % (outf_syn, epoch), x.transpose(1, 2), None,
                                        None,
