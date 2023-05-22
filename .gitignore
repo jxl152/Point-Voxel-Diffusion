@@ -8,3 +8,7 @@ __pycache__
 *.npz
 eval_model
 eval_data
+
+wandb
+pretrained
+*.sif
