@@ -656,6 +656,7 @@ def train(gpu, opt, output_dir, noises_init):
             train_sampler.set_epoch(epoch)
 
         lr_scheduler.step(epoch)
+        logger.info('epoch {}, current learning rate: {:>.8f}'.format(epoch, optimizer.param_groups[0]['lr']))
 
         for i, data in enumerate(dataloader):
             # data is a dict containing 8 key-value pairs
@@ -677,7 +678,8 @@ def train(gpu, opt, output_dir, noises_init):
 
             optimizer.zero_grad()
             loss.backward()
-            netpNorm, netgradNorm = getGradNorm(model)
+            # TODO: we don't need the two metrics temporarily
+            # netpNorm, netgradNorm = getGradNorm(model)
             if opt.grad_clip is not None:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), opt.grad_clip)
 
@@ -689,42 +691,42 @@ def train(gpu, opt, output_dir, noises_init):
                 # 3d format an interger reserving 3 spaces, right justified by default
                 # 10.4f format a float, reserving 10 spaces, 4 after the decimal point, right justified by default
                 logger.info('[{:>3d}/{:>3d}][{:>3d}/{:>3d}]    loss: {:>10.4f},    '
-                             'netpNorm: {:>10.2f},   netgradNorm: {:>10.2f}     '
+                             # 'netpNorm: {:>10.2f},   netgradNorm: {:>10.2f}     '
                              .format(
                         epoch, opt.niter, i, len(dataloader),loss.item(),
-                    netpNorm, netgradNorm,
+                    # netpNorm, netgradNorm,
                         ))
 
-                if opt.logs_to_wandb:
-                    wandb.log({
-                        'epoch': epoch,
-                        'lr': lr_scheduler.optimizer.param_groups[-1]['lr'],
-                        'loss': loss.item(),
-                        'netpNorm': netpNorm,
-                        'netgradNorm': netgradNorm
-                    })
+                # if opt.logs_to_wandb:
+                #     wandb.log({
+                #         'epoch': epoch,
+                #         'lr': lr_scheduler.optimizer.param_groups[-1]['lr'],
+                #         'loss': loss.item(),
+                #         'netpNorm': netpNorm,
+                #         'netgradNorm': netgradNorm
+                #     })
 
 
-        if (epoch + 1) % opt.diagIter == 0 and should_diag:
+        # if (epoch + 1) % opt.diagIter == 0 and should_diag:
 
-            logger.info('Diagnosis:')
+        #     logger.info('Diagnosis:')
 
-            x_range = [x.min().item(), x.max().item()]
-            kl_stats = model.all_kl(x)
-            logger.info('      [{:>3d}/{:>3d}]    '
-                         'x_range: [{:>10.4f}, {:>10.4f}],   '
-                         'total_bpd_b: {:>10.4f},    '
-                         'terms_bpd: {:>10.4f},  '
-                         'prior_bpd_b: {:>10.4f}    '
-                         'mse_bt: {:>10.4f}  '
-                .format(
-                epoch, opt.niter,
-                *x_range,
-                kl_stats['total_bpd_b'].item(),     # L_vlb
-                kl_stats['terms_bpd'].item(),       # L_0 + L_1 + ... + L_(T-1)
-                kl_stats['prior_bpd_b'].item(),     # L_T
-                kl_stats['mse_bt'].item()
-            ))
+        #     x_range = [x.min().item(), x.max().item()]
+        #     kl_stats = model.all_kl(x)
+        #     logger.info('      [{:>3d}/{:>3d}]    '
+        #                  'x_range: [{:>10.4f}, {:>10.4f}],   '
+        #                  'total_bpd_b: {:>10.4f},    '
+        #                  'terms_bpd: {:>10.4f},  '
+        #                  'prior_bpd_b: {:>10.4f}    '
+        #                  'mse_bt: {:>10.4f}  '
+        #         .format(
+        #         epoch, opt.niter,
+        #         *x_range,
+        #         kl_stats['total_bpd_b'].item(),     # L_vlb
+        #         kl_stats['terms_bpd'].item(),       # L_0 + L_1 + ... + L_(T-1)
+        #         kl_stats['prior_bpd_b'].item(),     # L_T
+        #         kl_stats['mse_bt'].item()
+        #     ))
 
 
 
@@ -741,13 +743,13 @@ def train(gpu, opt, output_dir, noises_init):
                 gen_stats = [x_gen_eval.mean(), x_gen_eval.std()]
                 gen_eval_range = [x_gen_eval.min().item(), x_gen_eval.max().item()]
 
-                logger.info('      [{:>3d}/{:>3d}]  '
-                             'eval_gen_range: [{:>10.4f}, {:>10.4f}]     '
-                             'eval_gen_stats: [mean={:>10.4f}, std={:>10.4f}]      '
-                    .format(
-                    epoch, opt.niter,
-                    *gen_eval_range, *gen_stats,
-                ))
+                # logger.info('      [{:>3d}/{:>3d}]  '
+                #              'eval_gen_range: [{:>10.4f}, {:>10.4f}]     '
+                #              'eval_gen_stats: [mean={:>10.4f}, std={:>10.4f}]      '
+                #     .format(
+                #     epoch, opt.niter,
+                #     *gen_eval_range, *gen_stats,
+                # ))
 
             # visualize the final results of 25 generations
             visualize_pointcloud_batch('%s/epoch_%03d_samples_eval.png' % (outf_syn, epoch),
