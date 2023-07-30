@@ -11,3 +11,4 @@ eval_data
 pretrained
 wandb
 *.sif
+*.so
